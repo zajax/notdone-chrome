@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+<title>Not Done, Done Background</title>
+
+<script src="libs/phpjs.js"></script>
+<script src="libs/hmac-sha1.crypto-js.2.5.3.js"></script>
+<script src="js/donedone-api.js"></script>
+
+</head>
+<body>
+<script>
+
+	var apis = [];
+	var currentAPIIndex = 0;
+	var callback = false;
+	var lastRequest = false;
+	var api_cache = [];
+	
+	var request_queue = [];
+	var requesting = false;
+
+	try{
+      var accounts = JSON.parse(localStorage.accounts);
+    }catch(e){
+      accounts = [];
+    }
+
+    for(var x = 0; x < accounts.length; x++){
+    	apis[x] = new DoneDoneAPI(
+	    	accounts[x]['subdomain'],
+	    	accounts[x]['username'],
+	    	accounts[x]['password'],
+	    	accounts[x]['token']
+	    );
+	    api_cache[x] = {};
+    }
+
+	function queueRequest(request, sender, sendResponse){
+		if(request['error']) return;
+		
+		request_queue.push({
+			request: request,
+			sender: sender,
+			sendResponse: sendResponse
+		});
+	}
+	
+	function processQueue() {
+		
+		if(requesting || request_queue.length <= 0) return;
+		
+		requesting = true;
+		
+		var queue_item = request_queue.pop();
+		var request = queue_item.request;
+		var sender = queue_item.sender;
+		var sendResponse = queue_item.sendResponse;
+	
+		if(request['changeAccount']){
+			currentAPIIndex = request['accountIndex'];
+		}
+
+		if(request['updateAccounts']){
+			refreshAPIs();
+		}
+
+		if(request['clearCache']){
+			for(var x = 0; x < api_cache.length; x++){
+				api_cache[x] = {};
+			}
+		}
+
+		
+
+		if(request['action'] && apis[currentAPIIndex][request['action']]){
+			callback = sendResponse;
+			if(api_cache[currentAPIIndex][JSON.stringify(request)]){
+				requesting = false;
+				callback(api_cache[currentAPIIndex][JSON.stringify(request)]);
+			}else{
+				lastRequest = request;
+				apis[currentAPIIndex][request['action']](request['data'], cacheResult);
+				
+			}
+		}
+
+    };
+
+	function cacheResult(data, successful){
+		requesting = false;
+		if(successful){
+			api_cache[currentAPIIndex][JSON.stringify(lastRequest)] = data;
+			callback(data);
+		}
+	}
+	
+
+	chrome.extension.onRequest.addListener(queueRequest);
+	
+	window.setInterval(processQueue, 100);
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "Not Done, Done",
+  "version": "0.1",
+  "description": "Take a screenshot of a website, mark it up with some red lines, upload to your getdonedone.com project and make a new issue (bug ticket).",
+  "options_page": "options.html",
+  "background_page":"background.html",
+  "browser_action": {
+    "default_title": "Not Done, Done",
+	"default_icon": "icon48.png",
+    "popup": "popup.html"
+  },
+  "icons":{
+	"16": "icon16.png",
+	"48": "icon48.png",
+	"128":"icon128.png"
+  },
+  "content_scripts":[{ 
+	"matches":["<all_urls>"],
+	"js":[ "libs/jquery-1.7.1.min.js", "js/drawing-layer.js"],
+	"all_frames":false
+	}
+  ],
+  "permissions": [
+  	"tabs",
+    "<all_urls>"
+  ]
+}

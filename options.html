@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+<title>Not Done, Done Options</title>
+
+<script type="text/javascript" src="libs/jquery-1.7.1.min.js"></script>
+
+<link rel="stylesheet" type="text/css" media="screen" href="style/bootstrap.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="style/options.css" />
+
+
+
+
+<script>
+  $(function(){
+    refreshAccounts();
+  });
+
+
+function saveAccounts(){
+  var $accounts = $("#accounts");
+  try{
+    var accounts = JSON.parse(localStorage.accounts);
+  }catch(e){
+    accounts = [];
+  }
+  var newaccounts = [];
+  var $rows = $accounts.find(".account");
+  for(var x = 0; x < $rows.size(); x++){
+    var $row = $rows.eq(x);
+
+
+
+    var account = {
+      subdomain: $row.find(".subdomain").val(),
+      username: $row.find(".username").val(),
+      password: $row.find(".password").val(),
+      token: $row.find(".token").val()
+    };
+    var id=$row.find(".id").val();
+    if($row.find(".delete").is(":checked")){
+      //skip the row
+    }else if(id == "NEW"){
+      newaccounts.push(account);
+    }else{
+      if(account.password == ""){
+        account.password = accounts[id]['password'];
+      }
+      newaccounts.push(account);
+    }
+  }
+
+  localStorage.accounts = JSON.stringify(newaccounts);
+
+  refreshAccounts();
+}
+
+function refreshAccounts(){
+
+  var $accounts = $("#accounts");
+  $accounts.find(".account").remove();
+  try{
+    var accounts = JSON.parse(localStorage.accounts);
+  }catch(e){
+    accounts = [];
+  }
+
+  if(typeof accounts !== "object" || accounts.length<=0){
+    accounts = [{
+      subdomain:"subdomain",
+      username:"email",
+      password:"password",
+      token:"token",
+      valid:"..."
+    }];
+    localStorage.accounts = JSON.stringify(accounts);
+  }
+
+  for(var x in accounts){
+    $accounts.append($(
+      '<tr class="account">'
+      +'  <td class="subdomain-cell">'+x+'<input type="hidden" class="id" value="'+x+'" /></td>'
+      +'  <td class="subdomain-cell"><input type="text" class="subdomain" value="'+accounts[x]['subdomain']+'" /></td>'
+      +'  <td class="username-cell"><input type="text" class="username" value="'+accounts[x]['username']+'" /></td>'
+      +'  <td class="password-cell"><input type="password" class="password" /></td>'
+      +'  <td class="token-cell"><input type="text" class="token" value="'+accounts[x]['token']+'" /></td>'
+      +'  <td class="delete-cell"><input type="checkbox" class="delete" value="1" /></td>'
+      +'</tr>'
+    ));
+  }
+
+}
+
+function addAccount(){
+  try{
+    var accounts = JSON.parse(localStorage.accounts);
+  }catch(e){
+    accounts = [];
+  }
+
+  var $accounts = $("#accounts");
+  $accounts.append($(
+      '<tr class="account new-account">'
+      +'  <td class="subdomain-cell">*NEW*<input type="hidden" class="id" value="NEW" /></td>'
+      +'  <td class="subdomain-cell"><input type="text" class="subdomain" value="" /></td>'
+      +'  <td class="username-cell"><input type="text" class="username" value="" /></td>'
+      +'  <td class="password-cell"><input type="password" class="password" /></td>'
+      +'  <td class="token-cell"><input type="text" class="token" value="" /></td>'
+      +'  <td class="delete-cell"><input type="checkbox" class="delete" value="1" /></td>'
+      +'</tr>'
+    ));
+}
+
+
+</script>
+</head>
+<body>
+<h1>
+  <img src="icon128.png" alt="Not Done, Done">
+  
+</h1>
+<h2>Options</h2>
+
+<table id="accounts">
+  <tr class="header">
+   <th>Account #</th>
+   <th>Subdomain</th>
+   <th>Username</th>
+   <th>Password</th>
+   <th>API Token</th>
+   <th>Delete?</th>
+  </tr>
+</table>
+<div id="form-options">
+  <input type="button" value="add row" onclick="addAccount();" />
+  <input type="button" value="save" onclick="saveAccounts();" />
+  <input type="button" value="cancel" onclick="refreshAccounts();" />
+</div>
+
+
+
+</body>
+</html>

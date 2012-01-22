@@ -1,0 +1,134 @@
+<!doctype html>
+<head>
+
+<title>Not Done, Done</title>
+
+<script type="text/javascript" src="libs/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="libs/colorpicker/js/colorpicker.js"></script>
+<script type="text/javascript" src="libs/chosen/chosen.jquery.min.js"></script>
+<script type="text/javascript" src="libs/phpjs.js"></script>
+
+<script type="text/javascript" src="js/popup.js"></script>
+
+
+<link rel="stylesheet" type="text/css" media="screen" href="style/bootstrap.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="libs/chosen/chosen.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="libs/colorpicker/css/colorpicker.css" />
+
+<link rel="stylesheet" type="text/css" media="screen" href="style/popup.css" />
+
+</head>
+<body>
+<div class="app">
+
+<h1><img src="title.png" alt="Not Done, Done" /></h1>
+
+<div id="status">
+
+	
+</div>
+<div id="status-clear" style="text-align:right;display:none;"><a href="#" onclick="$(this).hide();$('#status').children().remove();return false;">Clear Messages</a></div>
+
+
+<div id="accounts-wrapper" class="wrapper">
+	<label for="accounts">Account </label> 
+	<select id="accounts" name="accounts" style="width: 350px;">
+	</select>
+</div>
+
+<div id="projects-wrapper" class="wrapper">
+	<label for="projects">Project </label> 
+	<select id="projects" name="projects" style="width: 350px;">
+	</select>
+</div>
+
+
+<div id="action-wrapper" class="wrapper">
+	<label for="action">Action </label>
+	<div>
+		<label><input type="radio" name="action" class="action-option" value="comment" />Add Comment</label>
+		<label><input type="radio" name="action" class="action-option" value="new" />New Issue</label>
+	</div>
+	<div class="clearer"></div>
+</div>
+
+
+
+<div id="issues-wrapper" class="wrapper" style="display:none">
+	<label for="issues">Issues </label> 
+	<select id="issues" name="issues" style="width: 350px;">
+	</select>
+</div>
+
+<div id="priorities-wrapper" class="wrapper" style="display:none">
+	<label for="priorities">Priority </label> 
+	<select id="priorities" name="priorities" style="width: 350px;">
+	</select>
+</div>
+
+<div id="fixers-wrapper" class="wrapper" style="display:none">
+	<label for="fixers">Fixer</label> 
+	<select id="fixers" name="fixers" style="width: 350px;">
+	</select>
+</div>
+
+<div id="testers-wrapper" class="wrapper" style="display:none">
+	<label for="testers">Tester </label> 
+	<select id="testers" name="testers" style="width: 350px;">
+	</select>
+</div>
+
+<div id="comment-wrapper" class="wrapper" style="display:none">
+	<div>
+		<label>Comment </label>
+		<textarea id="comment" style="width: 350px;height:100px;"></textarea>
+		<div class="clearer"></div>
+	</div>
+	
+	<div>
+		<label></label><input type="button" value="Submit Comment" id="comment-button" />
+		<div class="clearer"></div>
+	</div>
+</div>
+
+<div id="issue-wrapper" class="wrapper" style="display:none">
+	<div>
+		<label>Title </label>
+		<input type="text" id="title" style="width: 350px;" />
+		<div class="clearer"></div>
+	</div>
+	<div>
+		<label>Body </label>
+		<textarea id="body" style="width: 350px;height:100px;"></textarea>
+		<div class="clearer"></div>
+	</div>
+	<div>
+		<label></label><input type="button" value="Submit Issue" id="issue-button" />
+		<div class="clearer"></div>
+	</div>
+</div>
+
+<div id="screenshot-wrapper" class="wrapper" style="display:none">
+	<label for="action">Screenshot </label>
+	<div>
+		<label><input type="checkbox" name="screenshot" class="screenshot-option" value="screenshot" />Include Screenshot</label>
+		<div class="clearer"></div>
+	</div>
+	<div class="clearer"></div>
+	
+	<div id="drawing-wrapper" style="display:none;">
+		<div><label>Markup Color </label><input type='color' id="markupcolor" value='FF0000' /><div class="clearer"></div></div>
+		<div><label>Brush Size </label><input type="range" name="brushsize" id="brushsize" min="1" max="10" value="5" /><div class="clearer"></div></div>
+		<div>
+			<label></label>
+			<input type="button" id="drawbutton" value="Start Drawing" />
+			<div class="clearer"></div>
+		</div>
+
+	</div>
+	
+</div>
+
+</div>
+</body>
+</html>
