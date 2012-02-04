@@ -10,8 +10,6 @@ var DoneDoneAPI = function(subdomain, username, password, api_token){
 
     this.baseURL = "https://"+this.subdomain+".mydonedone.com/IssueTracker/API/";
 
-    //this.projects = [];
-    //this.priorities = [];
 };
 
 
@@ -85,7 +83,7 @@ DoneDoneAPI.prototype = {
 					chrome.extension.sendRequest({error:'Error ('+this.status+'): '+this.responseText});
 				}
 		  	}
-	  	}
+	  	};
 
 		this.xmlReq.open(
 			method,
@@ -116,46 +114,111 @@ DoneDoneAPI.prototype = {
 					chrome.extension.sendRequest({error:'Error ('+this.status+'): '+this.responseText});
 				}
 		  	}
-	  	}
+	  	};
 
 		this.xmlReq.open(
 			method,
 			this.baseURL + path,
-			true);
+			true
+        );
 			
         var requestSig = utf8_encode(this.baseURL+path);
         
         content = ksort(content);
 
-        var data = new FormData();
+
+        var data = new Array();
         for(var key in content){
-		
             requestSig += key.toLowerCase()+content[key].replace(/[\r]/gm,"");
-		
-			data.append(key.toLowerCase(), content[key].replace(/[\r]/gm,""));
-			
+			data.push({
+                name: key.toLowerCase(),
+                content: content[key],
+                file: false
+            });
         }
-		
 
-        
-        
         if(file){
-            data.append("Screenshot", dataURItoBlob(file), "Screenshot.jpg");
+            data.push({
+                name: "Screenshot",
+                content: dataURItoBinary(file),
+                file: true,
+                filename:  "Screenshot.jpg"
+            });
         }
 
-		console.log(requestSig);
-		console.log(btoa(Crypto.HMAC(Crypto.SHA1, requestSig, this.token, { asString: true })));
-		
-		
         var encodedSig = btoa(Crypto.HMAC(Crypto.SHA1, requestSig, this.token, { asString: true }));
 
         this.xmlReq.setRequestHeader("Authorization", "Basic "+btoa(this.username+":"+this.password));
         this.xmlReq.setRequestHeader("X-DoneDone-Signature", encodedSig);
 
-		this.xmlReq.send(data);
+
+        var boundary = this.generateBoundary();
+        var contentType = "multipart/form-data; boundary=" + boundary;
+        this.xmlReq.setRequestHeader("Content-Type", contentType);
+
+		this.xmlReq.sendAsBinary(this.buildMessage(data, boundary));
 			
-	}
-	
+	},
+    generateBoundary: function() {
+        return "AJAX-----------------------" + (new Date).getTime();
+    },
+    buildMessage : function(elements, boundary) {
+        var CRLF = "\r\n";
+        var parts = [];
+
+        elements.forEach(function(element, index, all) {
+            var part = "";
+
+            if (element.file) {
+                var fieldName = element.name;
+                var fileName = element.filename;
+
+                /*
+                 * Content-Disposition header contains name of the field
+                 * used to upload the file and also the name of the file as
+                 * it was on the user's computer.
+                 */
+                part += 'Content-Disposition: form-data; ';
+                part += 'name="' + fieldName + '"; ';
+                part += 'filename="'+ fileName + '"' + CRLF;
+
+                /*
+                 * Content-Type header contains the mime-type of the file
+                 * to send. Although we could build a map of mime-types
+                 * that match certain file extensions, we'll take the easy
+                 * approach and send a general binary header:
+                 * application/octet-stream
+                 */
+                part += "Content-Type: application/octet-stream";
+                part += CRLF + CRLF; // marks end of the headers part
+
+                /*
+                 * File contents read as binary data, obviously
+                 */
+                part += element.content + CRLF;
+            } else {
+                /*
+                 * In case of non-files fields, Content-Disposition
+                 * contains only the name of the field holding the data.
+                 */
+                part += 'Content-Disposition: form-data; ';
+                part += 'name="' + element.name + '"' + CRLF + CRLF;
+
+                /*
+                 * Field value
+                 */
+                part += element.content + CRLF;
+            }
+
+            parts.push(part);
+        });
+
+        var request = "--" + boundary + CRLF;
+        request+= parts.join("--" + boundary + CRLF);
+        request+= "--" + boundary + "--" + CRLF;
+
+        return request;
+    }
 };
 
 XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
@@ -165,6 +228,20 @@ XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
     var ords = Array.prototype.map.call(datastr, byteValue);
     var ui8a = new Uint8Array(ords);
     this.send(ui8a.buffer);
+};
+
+function dataURItoBinary(dataURI){
+    // convert base64 to raw binary data held in a string
+    // doesn't handle URLEncoded DataURIs
+
+    var byteString;
+    if (dataURI.split(',')[0].indexOf('base64') >= 0)
+        byteString = atob(dataURI.split(',')[1]);
+    else
+        byteString = unescape(dataURI.split(',')[1]);
+
+
+    return byteString; //getBlob(mimeString).toString();
 }
 
 function dataURItoBlob(dataURI) {
@@ -195,5 +272,5 @@ function dataURItoBlob(dataURI) {
 	
     // write the ArrayBuffer to a blob, and you're done
     bb.append(ab);
-    return bb.getBlob(mimeString);
+    return getBlob(mimeString);
 }
